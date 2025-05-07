@@ -1,7 +1,6 @@
-from nonebot import get_driver
-from nonebot.plugin import PluginMetadata
+from nonebot import get_driver, require, logger
+from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
-from nonebot import logger
 from .config import Config
 
 from .command import diuse_farm, diuse_register, reclamation
@@ -38,7 +37,9 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/Shu-Ying/nonebot_plugin_farm",
     config=Config,
-    supported_adapters={"~onebot.v11"},
+    supported_adapters=inherit_supported_adapters(
+        "nonebot-plugin-alconna", "nonebot-plugin-uninfo", "nonebot-plugin-waiter"
+    ),
 )
 driver = get_driver()
 
