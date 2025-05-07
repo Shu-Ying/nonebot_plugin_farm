@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from zhenxun.services.log import logger
+from nonebot import logger
 
 from .database import CSqlManager
 

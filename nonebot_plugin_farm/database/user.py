@@ -2,7 +2,7 @@ import math
 from datetime import date, datetime, timedelta
 from typing import List, Union
 
-from zhenxun.services.log import logger
+from nonebot import logger
 
 from .database import CSqlManager
 

@@ -1,12 +1,11 @@
 from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
 
-from zhenxun.configs.utils import Command, PluginExtraData, RegisterConfig
-from zhenxun.services.log import logger
-from zhenxun.utils.message import MessageUtils
+from nonebot import logger
 
 from .command import diuse_farm, diuse_register, reclamation
-from .config import g_pJsonManager
+from .config import g_pConfigManager
+from .json import g_pJsonManager
 from .database.database import g_pSqlManager
 from .dbService import g_pDBService
 from .farm.farm import g_pFarmManager
@@ -34,39 +33,7 @@ __plugin_meta__ = PluginMetadata(
         开垦
         购买农场币 [数量] 数量为消耗金币的数量
         更改农场名 [新农场名]
-    """.strip(),
-    extra=PluginExtraData(
-        author="Art_Sakura",
-        version="1.2",
-        commands=[Command(command="我的农场")],
-        menu_type="群内小游戏",
-        configs=[
-            RegisterConfig(
-                key="绘制农场清晰度",
-                value="low",
-                help="我的农场返回图片的清晰度, [low, medium, hight, original]",
-                default_value="low",
-            ),
-            RegisterConfig(
-                key="兑换倍数",
-                value="2",
-                help="金币兑换农场币的倍数 默认值为: 2倍",
-                default_value="2",
-            ),
-            RegisterConfig(
-                key="手续费",
-                value="0.2",
-                help="金币兑换农场币的手续费 默认值为: 0.2 实际意义为20%手续费",
-                default_value="0.2",
-            ),
-            RegisterConfig(
-                key="服务地址",
-                value="http://diuse.work",
-                help="签到、交易行、活动等服务器地址",
-                default_value="http://diuse.work",
-            )
-        ]
-    ).to_dict(),
+    """.strip()
 )
 driver = get_driver()
 
