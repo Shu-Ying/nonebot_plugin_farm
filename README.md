@@ -1,4 +1,4 @@
-# 真寻农场(zhenxun_plugin_farm)
+# 真寻农场(nonebot_plugin_farm)
 
 你是说可以种地对吧🤔?
 
@@ -6,8 +6,29 @@
 
 ## 如何安装
 
-方法一（推荐）：在小真寻后台的插件商店下载即可<br>
-方法二：下载源码放在小真寻`plugin`目录下
+<details open>
+<summary>使用 nb-cli 安装</summary>
+在 nonebot2 项目的根目录下打开命令行, 输入以下指令即可安装
+
+    nb plugin install nonebot-plugin-farm
+
+</details>
+
+<details>
+<summary>使用包管理器安装</summary>
+在 nonebot2 项目的插件目录下, 打开命令行, 根据你使用的包管理器, 输入相应的安装命令
+
+<details>
+<summary>pip</summary>
+
+    pip install nonebot-plugin-farm
+
+</details>
+打开 nonebot2 项目根目录下的 `pyproject.toml` 文件, 在 `[tool.nonebot]` 部分追加写入
+
+    plugins = ["nonebot-plugin-farm"]
+
+</details>
 
 ---
 
@@ -86,4 +107,4 @@
 
 ## 许可证
 
-`真寻农场(zhenxun_plugin_farm)`将采用的是`GPLv3`许可证进行开源
+`真寻农场(nonebot_plugin_farm)`将采用的是`GPLv3`许可证进行开源

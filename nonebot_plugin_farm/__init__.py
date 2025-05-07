@@ -2,6 +2,7 @@ from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
 
 from nonebot import logger
+from .config import Config
 
 from .command import diuse_farm, diuse_register, reclamation
 from .config import g_pConfigManager
@@ -33,7 +34,11 @@ __plugin_meta__ = PluginMetadata(
         开垦
         购买农场币 [数量] 数量为消耗金币的数量
         更改农场名 [新农场名]
-    """.strip()
+    """.strip(),
+    type="application",
+    homepage="https://github.com/Shu-Ying/nonebot_plugin_farm",
+    config=Config,
+    supported_adapters={"~onebot.v11"},
 )
 driver = get_driver()
 
