@@ -3,7 +3,7 @@ name = "nonebot_plugin_farm"
 version = "1.2.0"
 description = "快乐的农场时光"
 authors = ["Art_Sakura <1754798088@qq.com>"]
-license = {text = "GPL-3.0-or-later"}
+license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Shu-Ying/nonebot_plugin_farm.git"
 
