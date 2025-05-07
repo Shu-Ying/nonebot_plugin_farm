@@ -182,6 +182,21 @@
             "general": true,
             "sell": false
         },
+        "土豆":
+        {
+            "level": 4,
+            "buy": 188,
+            "limit": 0,
+            "experience": 20,
+            "harvest": 18,
+            "price": 24,
+            "time": 15,
+            "crop": 1,
+            "again": 0,
+            "phase": 6,
+            "general": true,
+            "sell": false
+        },
         "红枣":
         {
             "level": 5,
@@ -206,6 +221,36 @@
             "harvest": 20,
             "price": 25,
             "time": 16,
+            "crop": 1,
+            "again": 0,
+            "phase": 6,
+            "general": true,
+            "sell": false
+        },
+        "花菜":
+        {
+            "level": 6,
+            "buy": 258,
+            "limit": 0,
+            "experience": 37,
+            "harvest": 28,
+            "price": 26,
+            "time": 28,
+            "crop": 1,
+            "again": 0,
+            "phase": 6,
+            "general": true,
+            "sell": false
+        },
+        "韭菜":
+        {
+            "level": 6,
+            "buy": 251,
+            "limit": 0,
+            "experience": 22,
+            "harvest": 21,
+            "price": 26,
+            "time": 17,
             "crop": 1,
             "again": 0,
             "phase": 6,
@@ -251,6 +296,21 @@
             "harvest": 22,
             "price": 27,
             "time": 18,
+            "crop": 1,
+            "again": 0,
+            "phase": 6,
+            "general": true,
+            "sell": false
+        },
+        "莲藕":
+        {
+            "level": 7,
+            "buy": 264,
+            "limit": 0,
+            "experience": 44,
+            "harvest": 34,
+            "price": 26,
+            "time": 34,
             "crop": 1,
             "again": 0,
             "phase": 6,
