@@ -130,8 +130,6 @@ diuse_farm = on_alconna(
         Subcommand("my-plant", help_text="我的作物"),
         Subcommand("sell-plant", Args["name?", str]["num?", int], help_text="出售作物"),
         Subcommand("stealing", Args["target?", At], help_text="偷菜"),
-        Subcommand("buy-point", Args["num?", int], help_text="购买农场币"),
-        #Subcommand("sell-point", Args["num?", int], help_text="转换金币")
         Subcommand("change-name", Args["name?", str], help_text="更改农场名")
     ),
     priority=5,
@@ -371,28 +369,6 @@ async def _(session: Uninfo, target: Match[At]):
         return None
 
     result = await g_pFarmManager.stealing(uid, tar.target)
-    await MessageUtils.build_message(result).send(reply_to=True)
-
-diuse_farm.shortcut(
-    "购买农场币(.*?)",
-    command="我的农场",
-    arguments=["buy-point"],
-    prefix=True,
-)
-
-@diuse_farm.assign("buy-point")
-async def _(session: Uninfo, num: Query[int] = AlconnaQuery("num", 0)):
-    if num.result <= 0:
-        await MessageUtils.build_message(
-            "请在指令后跟需要购买农场币的数量"
-        ).finish(reply_to=True)
-
-    uid = str(session.user.id)
-
-    if await isRegisteredByUid(uid) == False:
-        return
-
-    result = await g_pFarmManager.buyPointByUid(uid, num.result)
     await MessageUtils.build_message(result).send(reply_to=True)
 
 

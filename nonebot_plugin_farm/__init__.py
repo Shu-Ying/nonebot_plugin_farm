@@ -1,7 +1,12 @@
-from nonebot import get_driver
-from nonebot.plugin import PluginMetadata
+from nonebot import get_driver, require, logger
+from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
-from nonebot import logger
+from .config import Config
+
+
+require("nonebot_plugin_alconna")
+require("nonebot_plugin_uninfo")
+require("nonebot_plugin_waiter")
 
 from .command import diuse_farm, diuse_register, reclamation
 from .config import g_pConfigManager
@@ -33,7 +38,13 @@ __plugin_meta__ = PluginMetadata(
         开垦
         购买农场币 [数量] 数量为消耗金币的数量
         更改农场名 [新农场名]
-    """.strip()
+    """.strip(),
+    type="application",
+    homepage="https://github.com/Shu-Ying/nonebot_plugin_farm",
+    config=Config,
+    supported_adapters=inherit_supported_adapters(
+        "nonebot_plugin_alconna", "nonebot_plugin_uninfo", "nonebot_plugin_waiter"
+    ),
 )
 driver = get_driver()
 
