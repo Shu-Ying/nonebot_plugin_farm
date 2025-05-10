@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-from nonebot import logger
+from zhenxun.services.log import logger
 
 
 class Signal:

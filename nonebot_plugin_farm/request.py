@@ -2,8 +2,8 @@ import os
 
 import httpx
 
-from .config import g_pConfigManager
-from nonebot import logger
+from zhenxun.configs.config import Config
+from zhenxun.services.log import logger
 
 
 class CRequestManager:
@@ -54,7 +54,7 @@ class CRequestManager:
         if jsonData is None:
             raise ValueError("post请求必须提供jsonData")
 
-        baseUrl = g_pConfigManager.farm_server_url
+        baseUrl = Config.get_config("zhenxun_plugin_farm", "服务地址")
         url = f"{baseUrl.rstrip('/')}/{endpoint.lstrip('/')}"
         headers = {"token": "xZ%?z5LtWV7H:0-Xnwp+bNRNQ-jbfrxG"}
 
@@ -85,7 +85,7 @@ class CRequestManager:
         Returns:
             dict: 返回请求结果的JSON数据
         """
-        baseUrl = g_pConfigManager.farm_server_url
+        baseUrl = Config.get_config("zhenxun_plugin_farm", "服务地址")
         url = f"{baseUrl.rstrip('/')}/{endpoint.lstrip('/')}"
         headers = {"token": "xZ%?z5LtWV7H:0-Xnwp+bNRNQ-jbfrxG"}
 

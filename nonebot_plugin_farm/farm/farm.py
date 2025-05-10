@@ -5,18 +5,51 @@ from datetime import date, datetime
 from io import StringIO
 from typing import Dict, List, Tuple
 
-from nonebot import logger
-from zhenxun_utils._build_image import BuildImage
-from zhenxun_utils.image_utils import ImageTemplate
-from zhenxun_utils.platform import PlatformUtils
+from zhenxun.configs.config import Config
+from zhenxun.models.user_console import UserConsole
+from zhenxun.services.log import logger
+from zhenxun.utils._build_image import BuildImage
+from zhenxun.utils.enum import GoldHandle
+from zhenxun.utils.image_utils import ImageTemplate
+from zhenxun.utils.platform import PlatformUtils
 
-from ..config import g_pConfigManager, g_sResourcePath
-from ..json import g_pJsonManager
+from ..config import g_sResourcePath
 from ..dbService import g_pDBService
 from ..event.event import g_pEventManager
+from ..json import g_pJsonManager
 
 
 class CFarmManager:
+    @classmethod
+    async def buyPointByUid(cls, uid: str, num: int) -> str:
+        if num <= 0:
+            return "你是怎么做到购买不是正数的农场币的"
+
+        user = await UserConsole.get_user(uid)
+
+        pro = float(Config.get_config("zhenxun_plugin_farm", "兑换倍数"))
+        tax = float(Config.get_config("zhenxun_plugin_farm", "手续费"))
+
+        #计算手续费
+        fee = math.floor(num * tax)
+        #实际扣费金额
+        deduction = num + fee
+
+        if user.gold < deduction:
+            return f"你的金币不足或不足承担手续费。当前手续费为{fee}"
+
+        await UserConsole.reduce_gold(uid, num, GoldHandle.PLUGIN , 'zhenxun_plugin_farm') # type: ignore
+        await UserConsole.reduce_gold(uid, fee, GoldHandle.PLUGIN , 'zhenxun_plugin_farm') # type: ignore
+
+        point = num * pro
+
+        p = await g_pDBService.user.getUserPointByUid(uid)
+        number = point + p
+
+        await g_pDBService.user.updateUserPointByUid(uid, int(number))
+
+        return f"充值{point}农场币成功，手续费{tax}金币，当前农场币：{number}"
+
     @classmethod
     async def drawFarmByUid(cls, uid: str) -> bytes:
         """绘制用户农场
@@ -125,7 +158,7 @@ class CFarmManager:
         await img.paste(bondsImg, (570, 255))
 
         #清晰度
-        definition = g_pConfigManager.farm_draw_quality
+        definition = Config.get_config("zhenxun_plugin_farm", "绘制农场清晰度")
         if definition == "medium":
             await img.resize(0.6)
         elif definition == "hight":
@@ -162,7 +195,10 @@ class CFarmManager:
             return True, plant, False
 
         #获取作物详细信息
-        plantInfo = g_pJsonManager.m_pPlant['plant'][soilInfo['plantName']]
+        plantInfo = await g_pDBService.plant.getPlantByName(soilInfo['plantName'])
+        if not plantInfo:
+            logger.error(f"绘制植物资源失败: {soilInfo['plantName']}")
+            return False, None, False #type: ignore
 
         currentTime = datetime.now()
         matureTime = datetime.fromtimestamp(int(soilInfo['matureTime']))
@@ -174,6 +210,12 @@ class CFarmManager:
 
             return True, plant, True
         else:
+            #如果是多阶段作物 且没有成熟
+            if soilInfo['harvestCount'] >= 1:
+                plant = BuildImage(background = g_sResourcePath / f"plant/{soilInfo['plantName']}/{plantInfo['phase'] - 2}.png")
+
+                return True, plant, False
+
             #如果没有成熟 则根据当前阶段进行绘制
             plantedTime = datetime.fromtimestamp(int(soilInfo['plantTime']))
 
@@ -224,7 +266,10 @@ class CFarmManager:
 
         for seedName, count in seedRecords.items():
             try:
-                plantInfo = g_pJsonManager.m_pPlant['plant'][seedName]
+                plantInfo = await g_pDBService.plant.getPlantByName(seedName)
+                if not plantInfo:
+                    continue
+
                 iconPath = g_sResourcePath / f"plant/{seedName}/icon.png"
                 icon = (iconPath, 33, 33) if iconPath.exists() else ""
                 sellable = "可以" if plantInfo['again'] else "不可以"
@@ -349,7 +394,10 @@ class CFarmManager:
                 if soilInfo.get("wiltStatus", 1) == 1:
                     continue
 
-                plantInfo = g_pJsonManager.m_pPlant.get("plant", {}).get(soilInfo['plantName'])
+                plantInfo = await g_pDBService.plant.getPlantByName(soilInfo['plantName'])
+                if not plantInfo:
+                    continue
+
                 currentTime = datetime.now()
                 matureTime = datetime.fromtimestamp(int(soilInfo['matureTime']))
 
@@ -370,7 +418,16 @@ class CFarmManager:
                     harvestRecords.append(f"收获作物：{soilInfo['plantName']}，数量为：{number}，经验为：{plantInfo['experience']}")
 
                     await g_pDBService.userPlant.addUserPlantByUid(uid, soilInfo['plantName'], number)
-                    await g_pDBService.userSoil.updateUserSoil(uid, i, "wiltStatus", 1)
+
+                    #如果到达收获次数上限
+                    if soilInfo['harvestCount'] + 1 >= plantInfo['crop']:
+                        await g_pDBService.userSoil.updateUserSoil(uid, i, "wiltStatus", 1)
+                    else:
+                        matureTs = int(currentTime.timestamp()) + int(plantInfo.get("again", 0)) * 3600
+
+                        await g_pDBService.userSoil.updateUserSoil(uid, i, "harvestCount", soilInfo['harvestCount'] + 1)
+                        await g_pDBService.userSoil.updateUserSoil(uid, i, "lastResetTime", int(currentTime.timestamp()))
+                        await g_pDBService.userSoil.updateUserSoil(uid, i, "matureTime", matureTs)
 
                     await g_pEventManager.m_afterHarvest.emit(uid=uid, name=soilInfo['plantName'], num=number, soilIndex=i)
 
@@ -421,6 +478,9 @@ class CFarmManager:
                 #批量更新数据库操作
                 await g_pDBService.userSoil.deleteUserSoil(uid, i)
 
+                #铲除作物会将偷菜记录清空
+                await g_pDBService.userSteal.deleteStealRecord(uid, i)
+
                 await g_pEventManager.m_afterEradicate.emit(uid=uid, soilIndex=i)
 
         if experience > 0:
@@ -464,7 +524,10 @@ class CFarmManager:
 
         sell = ""
         for name, count in plant.items():
-            plantInfo = g_pJsonManager.m_pPlant['plant'][name]
+            plantInfo = await g_pDBService.plant.getPlantByName(name)
+            if not plantInfo:
+                continue
+
             icon = ""
             icon_path = g_sResourcePath / f"plant/{name}/icon.png"
             if icon_path.exists():
@@ -544,7 +607,10 @@ class CFarmManager:
                 continue
 
             #作物信息
-            plantInfo = g_pJsonManager.m_pPlant.get("plant", {}).get(soilInfo['plantName'])
+            plantInfo = await g_pDBService.plant.getPlantByName(soilInfo['plantName'])
+            if not plantInfo:
+                continue
+
             currentTime = datetime.now()
             matureTime = datetime.fromtimestamp(int(soilInfo['matureTime']))
 
@@ -566,7 +632,18 @@ class CFarmManager:
 
                     #如果将作物偷完，就直接更新状态 并记录用户偷取过
                     if plantInfo['harvest'] - randomNumber + stealingNumber == 0:
-                        await g_pDBService.userSoil.updateUserSoil(target, i, "wiltStatus", 1)
+                        #如果作物 是最后一阶段作物且偷完 则直接枯萎
+                        if soilInfo['harvestCount'] + 1 >= plantInfo['crop']:
+                            await g_pDBService.userSoil.updateUserSoil(target, i, "wiltStatus", 1)
+                        else:
+                            matureTs = int(currentTime.timestamp()) + int(plantInfo.get("again", 0)) * 3600
+
+                            await g_pDBService.userSoil.updateUserSoil(uid, i, "harvestCount", soilInfo['harvestCount'] + 1)
+                            await g_pDBService.userSoil.updateUserSoil(uid, i, "lastResetTime", int(currentTime.timestamp()))
+                            await g_pDBService.userSoil.updateUserSoil(uid, i, "matureTime", matureTs)
+
+                            await g_pDBService.userSteal.addStealRecord(target, i, uid, randomNumber, int(datetime.now().timestamp()))
+
                     else:
                         await g_pDBService.userSteal.addStealRecord(target, i, uid, randomNumber, int(datetime.now().timestamp()))
 

@@ -6,8 +6,8 @@ from nonebot_plugin_alconna import (Alconna, AlconnaMatch, AlconnaQuery, Args,
 from nonebot_plugin_uninfo import Uninfo
 from nonebot_plugin_waiter import waiter
 
-from nonebot import logger
-from zhenxun_utils.message import MessageUtils
+from zhenxun.services.log import logger
+from zhenxun.utils.message import MessageUtils
 
 from .dbService import g_pDBService
 from .farm.farm import g_pFarmManager

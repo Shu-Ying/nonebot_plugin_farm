@@ -1,6 +1,6 @@
 from typing import Optional
 
-from nonebot import logger
+from zhenxun.services.log import logger
 
 from .database import CSqlManager
 
