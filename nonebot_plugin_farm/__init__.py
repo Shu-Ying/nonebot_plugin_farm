@@ -7,7 +7,6 @@ from .config import Config
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_uninfo")
 require("nonebot_plugin_waiter")
-require("nonebot_plugin_localstore")
 
 from .command import diuse_farm, diuse_register, reclamation
 from .config import g_pConfigManager
