@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-from zhenxun.services.log import logger
+from nonebot import logger
 
 from ..dbService import g_pDBService
 from ..json import g_pJsonManager

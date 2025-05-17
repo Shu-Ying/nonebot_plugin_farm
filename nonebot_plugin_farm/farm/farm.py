@@ -5,51 +5,17 @@ from datetime import date, datetime
 from io import StringIO
 from typing import Dict, List, Tuple
 
-from zhenxun.configs.config import Config
-from zhenxun.models.user_console import UserConsole
-from zhenxun.services.log import logger
-from zhenxun.utils._build_image import BuildImage
-from zhenxun.utils.enum import GoldHandle
-from zhenxun.utils.image_utils import ImageTemplate
-from zhenxun.utils.platform import PlatformUtils
+from nonebot import logger
+from zhenxun_utils._build_image import BuildImage
+from zhenxun_utils.image_utils import ImageTemplate
+from zhenxun_utils.platform import PlatformUtils
 
-from ..config import g_sResourcePath
+from ..config import g_pConfigManager, g_sResourcePath
+from ..json import g_pJsonManager
 from ..dbService import g_pDBService
 from ..event.event import g_pEventManager
-from ..json import g_pJsonManager
-
 
 class CFarmManager:
-    @classmethod
-    async def buyPointByUid(cls, uid: str, num: int) -> str:
-        if num <= 0:
-            return "你是怎么做到购买不是正数的农场币的"
-
-        user = await UserConsole.get_user(uid)
-
-        pro = float(Config.get_config("zhenxun_plugin_farm", "兑换倍数"))
-        tax = float(Config.get_config("zhenxun_plugin_farm", "手续费"))
-
-        #计算手续费
-        fee = math.floor(num * tax)
-        #实际扣费金额
-        deduction = num + fee
-
-        if user.gold < deduction:
-            return f"你的金币不足或不足承担手续费。当前手续费为{fee}"
-
-        await UserConsole.reduce_gold(uid, num, GoldHandle.PLUGIN , 'zhenxun_plugin_farm') # type: ignore
-        await UserConsole.reduce_gold(uid, fee, GoldHandle.PLUGIN , 'zhenxun_plugin_farm') # type: ignore
-
-        point = num * pro
-
-        p = await g_pDBService.user.getUserPointByUid(uid)
-        number = point + p
-
-        await g_pDBService.user.updateUserPointByUid(uid, int(number))
-
-        return f"充值{point}农场币成功，手续费{tax}金币，当前农场币：{number}"
-
     @classmethod
     async def drawFarmByUid(cls, uid: str) -> bytes:
         """绘制用户农场
@@ -158,7 +124,7 @@ class CFarmManager:
         await img.paste(bondsImg, (570, 255))
 
         #清晰度
-        definition = Config.get_config("zhenxun_plugin_farm", "绘制农场清晰度")
+        definition = g_pConfigManager.farm_draw_quality
         if definition == "medium":
             await img.resize(0.6)
         elif definition == "hight":

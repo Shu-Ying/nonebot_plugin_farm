@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 import aiosqlite
 
-from zhenxun.services.log import logger
+from nonebot import logger
 
 from ..config import g_sPlantPath
 

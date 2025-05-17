@@ -1,8 +1,7 @@
 import json
+
 from pathlib import Path
-
-from zhenxun.services.log import logger
-
+from nonebot import logger
 
 class CJsonManager:
     def __init__(self):
