@@ -3,11 +3,16 @@ import json
 from pathlib import Path
 from nonebot import logger
 
+from . import config
+from .request import g_pRequestManager
+
+
 class CJsonManager:
     def __init__(self):
         self.m_pItem = {}
         self.m_pLevel = {}
         self.m_pSoil = {}
+        self.m_pSign = {}
 
     async def init(self) -> bool:
         if not await self.initItem():
@@ -19,14 +24,12 @@ class CJsonManager:
         if not await self.initSoil():
             return False
 
-        return True
+        return await self.initSignInFile()
 
     async def initItem(self) -> bool:
-        current_file_path = Path(__file__)
-
         try:
             with open(
-                current_file_path.resolve().parent / "config/item.json",
+                config.g_sConfigPath / "item.json",
                 encoding="utf-8",
             ) as file:
                 self.m_pItem = json.load(file)
@@ -40,11 +43,9 @@ class CJsonManager:
             return False
 
     async def initLevel(self) -> bool:
-        current_file_path = Path(__file__)
-
         try:
             with open(
-                current_file_path.resolve().parent / "config/level.json",
+                config.g_sConfigPath / "level.json",
                 encoding="utf-8",
             ) as file:
                 self.m_pLevel = json.load(file)
@@ -58,11 +59,9 @@ class CJsonManager:
             return False
 
     async def initSoil(self) -> bool:
-        current_file_path = Path(__file__)
-
         try:
             with open(
-                current_file_path.resolve().parent / "config/soil.json",
+                config.g_sConfigPath / "soil.json",
                 encoding="utf-8",
             ) as file:
                 self.m_pSoil = json.load(file)
@@ -73,6 +72,30 @@ class CJsonManager:
             return False
         except json.JSONDecodeError as e:
             logger.warning(f"soil.json JSON格式错误: {e}")
+            return False
+
+    async def initSignInFile(self) -> bool:
+        if not await g_pRequestManager.initSignInFile():
+            config.g_bSignStatus = False
+
+            return False
+        else:
+            return await self.initSign()
+
+    async def initSign(self) -> bool:
+        try:
+            with open(
+                config.g_sSignInPath,
+                encoding="utf-8",
+            ) as file:
+                self.m_pSign = json.load(file)
+
+                return True
+        except FileNotFoundError:
+            logger.warning("sign_in.json 打开失败")
+            return False
+        except json.JSONDecodeError as e:
+            logger.warning(f"sign_in.json JSON格式错误: {e}")
             return False
 
 g_pJsonManager = CJsonManager()

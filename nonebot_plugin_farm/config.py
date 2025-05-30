@@ -7,12 +7,17 @@ require("nonebot_plugin_localstore")
 
 import nonebot_plugin_localstore as store
 
+g_bIsDebug = False
+
 g_sDBPath = store.get_plugin_data_dir() / "nonebot_plugin_farm/farm_db"
 g_sDBFilePath = g_sDBPath / "farm.db"
 
 g_sResourcePath = Path(__file__).resolve().parent / "resource"
 
 g_sPlantPath = g_sResourcePath / "db/plant.db"
+
+g_sConfigPath = Path(__file__).resolve().parent / "config"
+g_sSignInPath = g_sConfigPath / "sign_in.json"
 
 class Config(BaseModel):
     farm_draw_quality: str = "low"

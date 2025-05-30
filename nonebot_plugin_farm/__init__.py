@@ -7,6 +7,10 @@ from .config import Config
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_uninfo")
 require("nonebot_plugin_waiter")
+require("nonebot_plugin_apscheduler")
+
+
+from nonebot_plugin_apscheduler import scheduler
 
 from .command import diuse_farm, diuse_register, reclamation
 from .config import g_pConfigManager
@@ -26,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
         at 开通农场
         我的农场
         我的农场币
-        种子商店 [页数]
+        种子商店 [筛选关键字] [页数] or [页数]
         购买种子 [作物/种子名称] [数量]
         我的种子
         播种 [作物/种子名称] [数量] (数量不填默认将最大可能播种
@@ -43,7 +47,7 @@ __plugin_meta__ = PluginMetadata(
     homepage="https://github.com/Shu-Ying/nonebot_plugin_farm",
     config=Config,
     supported_adapters=inherit_supported_adapters(
-        "nonebot_plugin_alconna", "nonebot_plugin_uninfo", "nonebot_plugin_waiter", "nonebot_plugin_localstore"
+        "nonebot_plugin_alconna", "nonebot_plugin_uninfo", "nonebot_plugin_waiter", "nonebot_plugin_localstore", "nonebot_plugin_apscheduler"
     ),
 )
 driver = get_driver()
@@ -64,3 +68,18 @@ async def start():
 @driver.on_shutdown
 async def shutdown():
     await g_pSqlManager.cleanup()
+
+    await g_pDBService.cleanup()
+
+
+@scheduler.scheduled_job(
+    trigger="cron",
+    hour=0,
+    minute=30,
+    id="signInFile"
+)
+async def signInFile():
+    try:
+        await g_pJsonManager.initSignInFile()
+    except:
+        logger.info("农场签到文件下载失败！")

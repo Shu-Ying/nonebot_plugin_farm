@@ -1,45 +1,79 @@
-from datetime import date, datetime, timedelta
 from typing import Optional
 
 from nonebot import logger
 
+from ..config import g_bIsDebug
 from ..dbService import g_pDBService
 from ..json import g_pJsonManager
+from ..tool import g_pToolManager
 from .database import CSqlManager
 
 
 class CUserSoilDB(CSqlManager):
     @classmethod
     async def initDB(cls):
-        #uid: 用户Uid
-        #soilIndex:         地块索引从1开始
-        #plantName:         作物名称
-        #plantTime:         播种时间
-        #matureTime:        成熟时间
-        #soilLevel:         土地等级 0=普通地，1=红土地，2=黑土地，3=金土地
-        #wiltStatus:        枯萎状态 0=未枯萎，1=枯萎
-        #fertilizerStatus:  施肥状态 0=未施肥，1=施肥
-        #bugStatus:         虫害状态 0=无虫害，1=有虫害
-        #weedStatus:        杂草状态 0=无杂草，1=有杂草
-        #waterStatus:       缺水状态 0=不缺水，1=缺水
-        #harvestCount:      收获次数
         userSoil = {
             "uid": "TEXT NOT NULL",
-            "soilIndex": "INTEGER NOT NULL",
-            "plantName": "TEXT DEFAULT ''",
-            "plantTime": "INTEGER DEFAULT 0",
-            "matureTime": "INTEGER DEFAULT 0",
-            "soilLevel": "INTEGER DEFAULT 0",
-            "wiltStatus": "INTEGER DEFAULT 0",
-            "fertilizerStatus": "INTEGER DEFAULT 0",
-            "bugStatus": "INTEGER DEFAULT 0",
-            "weedStatus": "INTEGER DEFAULT 0",
-            "waterStatus": "INTEGER DEFAULT 0",
-            "harvestCount": "INTEGER DEFAULT 0",
+            "soilIndex": "INTEGER NOT NULL",        #地块索引从1开始
+            "plantName": "TEXT DEFAULT ''",         #作物名称
+            "plantTime": "INTEGER DEFAULT 0",       #播种时间
+            "matureTime": "INTEGER DEFAULT 0",      #成熟时间
+            "soilLevel": "INTEGER DEFAULT 0",       #土地等级 0=普通地，1=红土地，2=黑土地，3=金土地
+            "wiltStatus": "INTEGER DEFAULT 0",      #枯萎状态 0=未枯萎，1=枯萎
+            "fertilizerStatus": "INTEGER DEFAULT 0",#施肥状态 0=未施肥，1=施肥 2=增肥
+            "bugStatus": "INTEGER DEFAULT 0",       #虫害状态 0=无虫害，1=有虫害
+            "weedStatus": "INTEGER DEFAULT 0",      #杂草状态 0=无杂草，1=有杂草
+            "waterStatus": "INTEGER DEFAULT 0",     #缺水状态 0=不缺水，1=缺水
+            "harvestCount": "INTEGER DEFAULT 0",    #收获次数
             "PRIMARY KEY": "(uid, soilIndex)",
         }
 
         await cls.ensureTableSchema("userSoil", userSoil)
+
+    @classmethod
+    async def nextPhase(cls, uid: str, soilIndex: int):
+        """将指定地块的作物进入下个阶段
+
+        Args:
+            soilIndex (int): 地块索引 从1开始
+        """
+        if not g_bIsDebug:
+            return
+
+        soilInfo = await cls.getUserSoil(uid, soilIndex)
+
+        if not soilInfo:
+            return
+
+        plantInfo = await g_pDBService.plant.getPlantByName(soilInfo['plantName'])
+
+        if not plantInfo:
+            return
+
+        currentTime = g_pToolManager.dateTime().now().timestamp()
+        phaseList = await g_pDBService.plant.getPlantPhaseByName(soilInfo['plantName'])
+
+        if currentTime >= soilInfo['matureTime']:
+            return
+
+        currentStage = 0
+        elapsedTime = currentTime - soilInfo['plantTime']
+
+        for idx, thr in enumerate(phaseList, start=1):
+            if elapsedTime < thr:
+                currentStage = idx
+                break
+
+        t = int(soilInfo['plantTime']) - phaseList[currentStage]
+        s = int(soilInfo['matureTime']) - phaseList[currentStage]
+
+        await cls.updateUserSoilFields(uid, soilIndex,
+                                       {
+                                           "plantTime": t,
+                                           "matureTime": s
+                                       })
+
+        logger.debug(f"当前阶段{currentStage}, 阶段时间{phaseList[currentStage]}, 播种时间{t}, 收获时间{s}")
 
     @classmethod
     async def getUserFarmByUid(cls, uid: str) -> dict:
@@ -93,13 +127,15 @@ class CUserSoilDB(CSqlManager):
                     await cls.m_pDB.execute(
                         """
                         INSERT INTO userSoil
-                        (uid,soilIndex,plantName,plantTime,matureTime,harvestCount,)
+                        (uid,soilIndex,plantName,plantTime,matureTime,harvestCount)
                         VALUES (?,?,?,?,?,?)
                         """,
                         (uid, i, name, pt, mt, 0),
                     )
 
             await cls.m_pDB.execute("DROP TABLE soil")
+
+        logger.info("数据库迁移完毕！")
         return True
 
     @classmethod
@@ -252,6 +288,45 @@ class CUserSoilDB(CSqlManager):
         )
 
     @classmethod
+    async def updateUserSoilFields(cls, uid: str, soilIndex: int, updates: dict) -> bool:
+        """批量更新指定用户土地的多个字段
+
+        Args:
+            uid (str): 用户ID
+            soilIndex (int): 土地索引
+            updates (dict): 字段-新值的字典
+
+        Returns:
+            bool: 如果无可更新字段则返回 False，否则更新成功返回 True
+        """
+        #允许更新的列白名单
+        allowedFields = {
+            "plantName", "plantTime", "matureTime", "soilLevel",
+            "wiltStatus", "fertilizerStatus", "bugStatus",
+            "weedStatus", "waterStatus", "harvestCount"
+        }
+        setClauses = []
+        values = []
+        for field, value in updates.items():
+            if field not in allowedFields:
+                continue
+            setClauses.append(f'"{field}" = ?')
+            values.append(value)
+        if not setClauses:
+            return False
+
+        values.extend([uid, soilIndex])
+        sql = f'UPDATE userSoil SET {", ".join(setClauses)} WHERE uid = ? AND soilIndex = ?'
+
+        try:
+            async with cls._transaction():
+                await cls.m_pDB.execute(sql, tuple(values))
+            return True
+        except Exception as e:
+            logger.error(f"批量更新土地字段失败: {e}")
+            return False
+
+    @classmethod
     async def deleteUserSoil(cls, uid: str, soilIndex: int):
         """删除指定用户的土地记录
 
@@ -322,7 +397,7 @@ class CUserSoilDB(CSqlManager):
             logger.error(f"未知植物: {plantName}")
             return False
 
-        nowTs = int(datetime.now().timestamp())
+        nowTs = int(g_pToolManager.dateTime().now().timestamp())
         matureTs = nowTs + int(plantCfg.get("time", 0)) * 3600
 
         try:
@@ -349,3 +424,30 @@ class CUserSoilDB(CSqlManager):
         except Exception as e:
             logger.error(f"播种失败！", e=e)
             return False
+
+    @classmethod
+    async def getUserSoilStatus(cls, uid: str, soilIndex: int) -> str:
+        status = []
+        soilInfo = await g_pDBService.userSoil.getUserSoil(uid, soilIndex)
+
+        if not soilInfo:
+            return ""
+
+        if soilInfo.get("wiltStatus", 0) == 1:
+            return "枯萎"
+
+        if soilInfo.get("fertilizerStatus", 0) == 1:
+            status.append("施肥")
+        elif soilInfo.get("fertilizerStatus", 0) == 2:
+            status.append("增肥")
+
+        if soilInfo.get("bugStatus", 0) == 1:
+            status.append("虫害")
+
+        if soilInfo.get("weedStatus", 0) == 1:
+            status.append("杂草")
+
+        if soilInfo.get("waterStatus", 0) == 1:
+            status.append("缺水")
+
+        return ",".join(status)
