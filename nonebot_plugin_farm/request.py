@@ -139,7 +139,7 @@ class CRequestManager:
                     logger.warning("真寻农场签到文件检查失败, 即将下载")
                     return await cls.downloadSignInFile()
             except json.JSONDecodeError as e:
-                logger.warning(f"真寻农场签到文件格式错误, 即将下载")
+                logger.warning(f"真寻农场签到文件格式错误, 即将下载{e}")
                 return await cls.downloadSignInFile()
         else:
             return await cls.downloadSignInFile()
