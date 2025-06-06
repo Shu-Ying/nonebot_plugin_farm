@@ -1,5 +1,6 @@
 import inspect
 
+from nonebot import logger
 from nonebot.adapters import Event
 from nonebot.rule import to_me
 from nonebot_plugin_alconna import (
@@ -17,29 +18,14 @@ from nonebot_plugin_alconna import (
 )
 from nonebot_plugin_uninfo import Uninfo
 from nonebot_plugin_waiter import waiter
-
-from nonebot import logger
 from zhenxun_utils.message import MessageUtils
 
-from .config import g_bSignStatus
+from .config import g_bSignStatus, g_sTranslation
 from .dbService import g_pDBService
 from .farm.farm import g_pFarmManager
 from .farm.shop import g_pShopManager
 from .json import g_pJsonManager
 from .tool import g_pToolManager
-
-
-async def isRegisteredByUid(uid: str) -> bool:
-    result = await g_pDBService.user.isUserExist(uid)
-
-    if not result:
-        await MessageUtils.build_message(
-            "尚未开通农场，快at我发送 开通农场 开通吧"
-        ).send()
-        return False
-
-    return True
-
 
 diuse_register = on_alconna(
     Alconna("开通农场"),
@@ -55,12 +41,14 @@ async def handle_register(session: Uninfo):
     user = await g_pDBService.user.getUserInfoByUid(uid)
 
     if user:
-        await MessageUtils.build_message("🎉 您已经开通农场啦~").send(reply_to=True)
+        await MessageUtils.build_message(g_sTranslation["register"]["repeat"]).send(
+            reply_to=True
+        )
         return
 
     try:
         raw_name = str(session.user.name)
-        safe_name = sanitize_username(raw_name)
+        safe_name = g_pToolManager.sanitize_username(raw_name)
 
         # 初始化用户信息
         success = await g_pDBService.user.initUserInfoByUid(
@@ -68,68 +56,17 @@ async def handle_register(session: Uninfo):
         )
 
         msg = (
-            "✅ 农场开通成功！\n💼 初始资金：500农场币"
+            g_sTranslation["register"]["success"]
             if success
-            else "⚠️ 开通失败，请稍后再试"
+            else g_sTranslation["register"]["error"]
         )
         logger.info(f"用户注册 {'成功' if success else '失败'}：{uid}")
 
     except Exception as e:
-        msg = "⚠️ 系统繁忙，请稍后再试"
-        logger.error(f"注册异常 | UID:{uid} | 错误：{str(e)}")
+        msg = g_sTranslation["register"]["error"]
+        logger.error(f"注册异常 | UID:{uid} | 错误：{e}")
 
     await MessageUtils.build_message(msg).send(reply_to=True)
-
-
-def sanitize_username(username: str, max_length: int = 15) -> str:
-    """
-    安全处理用户名
-    功能：
-    1. 移除首尾空白
-    2. 过滤危险字符
-    3. 转义单引号
-    4. 处理空值
-    5. 限制长度
-    """
-    # 处理空值
-    if not username:
-        return "神秘农夫"
-
-    # 基础清洗
-    cleaned = username.strip()
-
-    # 允许的字符白名单（可自定义扩展）
-    # fmt: off
-    safe_chars = {
-        '_', '-', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
-        '+', '=', '.', ',', '~', '·', ' ',
-        'a','b','c','d','e','f','g','h','i','j','k','l','m',
-        'n','o','p','q','r','s','t','u','v','w','x','y','z',
-        'A','B','C','D','E','F','G','H','I','J','K','L','M',
-        'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-        '0','1','2','3','4','5','6','7','8','9',
-    }
-    # fmt: on
-    # 添加常用中文字符（Unicode范围）
-    safe_chars.update(chr(c) for c in range(0x4E00, 0x9FFF + 1))
-
-    # 过滤危险字符
-    filtered = [
-        c if c in safe_chars or 0x4E00 <= ord(c) <= 0x9FFF else "" for c in cleaned
-    ]
-
-    # 合并处理结果
-    safe_str = "".join(filtered)
-
-    # 转义单引号（双重保障）
-    escaped = safe_str.replace("'", "''")
-
-    # 处理空结果
-    if not escaped:
-        return "神秘农夫"
-
-    # 长度限制
-    return escaped[:max_length]
 
 
 diuse_farm = on_alconna(
@@ -161,7 +98,7 @@ diuse_farm = on_alconna(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     image = await g_pFarmManager.drawFarmByUid(uid)
@@ -180,7 +117,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     info = await g_pFarmManager.drawDetailFarmByUid(uid)
@@ -204,12 +141,12 @@ async def _(session: Uninfo):
     point = await g_pDBService.user.getUserPointByUid(uid)
 
     if point < 0:
-        await MessageUtils.build_message(
-            "尚未开通农场，快at我发送 开通农场 开通吧"
-        ).send()
+        await MessageUtils.build_message(g_sTranslation["basic"]["notFarm"]).send()
         return False
 
-    await MessageUtils.build_message(f"你的当前农场币为: {point}").send(reply_to=True)
+    await MessageUtils.build_message(
+        g_sTranslation["basic"]["point"].format(point=point)
+    ).send(reply_to=True)
 
 
 diuse_farm.shortcut(
@@ -224,7 +161,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo, res: Match[tuple[str, ...]]):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     if res.result is inspect._empty:
@@ -271,13 +208,13 @@ async def _(
     session: Uninfo, name: Match[str], num: Query[int] = AlconnaQuery("num", 1)
 ):
     if not name.available:
-        await MessageUtils.build_message("请在指令后跟需要购买的种子名称").finish(
+        await MessageUtils.build_message(g_sTranslation["buySeed"]["notSeed"]).finish(
             reply_to=True
         )
 
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pShopManager.buySeed(uid, name.result, num.result)
@@ -296,7 +233,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pFarmManager.getUserSeedByUid(uid)
@@ -316,13 +253,13 @@ async def _(
     session: Uninfo, name: Match[str], num: Query[int] = AlconnaQuery("num", -1)
 ):
     if not name.available:
-        await MessageUtils.build_message("请在指令后跟需要播种的种子名称").finish(
+        await MessageUtils.build_message(g_sTranslation["sowing"]["notSeed"]).finish(
             reply_to=True
         )
 
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pFarmManager.sowing(uid, name.result, num.result)
@@ -341,7 +278,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pFarmManager.harvest(uid)
@@ -360,7 +297,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pFarmManager.eradicate(uid)
@@ -379,7 +316,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pFarmManager.getUserPlantByUid(uid)
@@ -397,11 +334,11 @@ reclamation = on_alconna(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     condition = await g_pFarmManager.reclamationCondition(uid)
-    condition += "\n 回复是将执行开垦"
+    condition += f"\n{g_sTranslation['reclamation']['confirm']}"
     await MessageUtils.build_message(condition).send(reply_to=True)
 
     @waiter(waits=["message"], keep_session=True)
@@ -410,7 +347,9 @@ async def _(session: Uninfo):
 
     resp = await check.wait(timeout=60)
     if resp is None:
-        await MessageUtils.build_message("等待超时").send(reply_to=True)
+        await MessageUtils.build_message(g_sTranslation["reclamation"]["timeOut"]).send(
+            reply_to=True
+        )
         return
     if not resp == "是":
         return
@@ -433,7 +372,7 @@ async def _(
 ):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     result = await g_pShopManager.sellPlantByUid(uid, name.result, num.result)
@@ -452,17 +391,21 @@ diuse_farm.shortcut(
 async def _(session: Uninfo, target: Match[At]):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     if not target.available:
-        await MessageUtils.build_message("请在指令后跟需要at的人").finish(reply_to=True)
+        await MessageUtils.build_message(g_sTranslation["stealing"]["noTarget"]).finish(
+            reply_to=True
+        )
 
     tar = target.result
     result = await g_pDBService.user.isUserExist(tar.target)
 
     if not result:
-        await MessageUtils.build_message("目标尚未开通农场，快邀请ta开通吧").send()
+        await MessageUtils.build_message(
+            g_sTranslation["stealing"]["targetNotFarm"]
+        ).send()
         return None
 
     result = await g_pFarmManager.stealing(uid, tar.target)
@@ -480,27 +423,33 @@ diuse_farm.shortcut(
 @diuse_farm.assign("change-name")
 async def _(session: Uninfo, name: Match[str]):
     if not name.available:
-        await MessageUtils.build_message("请在指令后跟需要更改的农场名").finish(
+        await MessageUtils.build_message(g_sTranslation["changeName"]["noName"]).finish(
             reply_to=True
         )
 
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
-    safeName = sanitize_username(name.result)
+    safeName = g_pToolManager.sanitize_username(name.result)
 
     if safeName == "神秘农夫":
-        await MessageUtils.build_message("农场名不支持特殊符号！").send(reply_to=True)
+        await MessageUtils.build_message(g_sTranslation["changeName"]["error"]).send(
+            reply_to=True
+        )
         return
 
     result = await g_pDBService.user.updateUserNameByUid(uid, safeName)
 
-    if result == True:
-        await MessageUtils.build_message("更新农场名成功！").send(reply_to=True)
+    if result:
+        await MessageUtils.build_message(g_sTranslation["changeName"]["success"]).send(
+            reply_to=True
+        )
     else:
-        await MessageUtils.build_message("更新农场名失败！").send(reply_to=True)
+        await MessageUtils.build_message(g_sTranslation["changeName"]["error1"]).send(
+            reply_to=True
+        )
 
 
 diuse_farm.shortcut(
@@ -515,12 +464,12 @@ diuse_farm.shortcut(
 async def _(session: Uninfo):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     # 判断签到是否正常加载
     if not g_bSignStatus:
-        await MessageUtils.build_message("签到功能异常！").send()
+        await MessageUtils.build_message(g_sTranslation["signIn"]["error"]).send()
 
         return
 
@@ -538,7 +487,9 @@ async def _(session: Uninfo):
             uid, toDay.strftime("%Y-%m-%d")
         )
 
-        message += f"签到成功！累计签到天数：{signDay}\n获得经验{exp}，获得金币{point}"
+        message += g_sTranslation["signIn"]["success"].format(
+            day=signDay, exp=exp, num=point
+        )
 
         reward = g_pJsonManager.m_pSign["continuou"].get(f"{signDay}", None)
 
@@ -548,18 +499,22 @@ async def _(session: Uninfo):
 
             plant = reward.get("plant", {})
 
-            message += f"\n\n成功领取累计签到奖励：\n额外获得经验{extraExp}，额外获得金币{extraPoint}"
+            message += g_sTranslation["signIn"]["grandTotal"].format(
+                exp=extraExp, num=extraPoint
+            )
 
             vipPoint = reward.get("vipPoint", 0)
 
             if vipPoint > 0:
-                message += f"，额外获得点券{vipPoint}"
+                message += g_sTranslation["signIn"]["grandTotal1"].format(num=vipPoint)
 
             if plant:
                 for key, value in plant.items():
-                    message += f"\n获得{key}种子 * {value}"
+                    message += g_sTranslation["signIn"]["grandTotal2"].format(
+                        name=key, num=value
+                    )
     else:
-        message = "签到失败！未知错误"
+        message = g_sTranslation["signIn"]["error1"]
 
     await MessageUtils.build_message(message).send()
 
@@ -578,7 +533,7 @@ diuse_farm.shortcut(
 async def _(session: Uninfo, num: Query[int] = AlconnaQuery("num", 0)):
     uid = str(session.user.id)
 
-    if not await isRegisteredByUid(uid):
+    if not await g_pToolManager.isRegisteredByUid(uid):
         return
 
     await g_pDBService.userSoil.nextPhase(uid, num.result)
