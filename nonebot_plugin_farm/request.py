@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 
 import httpx
 
@@ -8,16 +7,19 @@ from .config import g_pConfigManager, g_sSignInPath
 from .tool import g_pToolManager
 from nonebot import logger
 
+
 class CRequestManager:
     m_sTokens = "xZ%?z5LtWV7H:0-Xnwp+bNRNQ-jbfrxG"
 
     @classmethod
-    async def download(cls,
-                       url: str,
-                       savePath: str,
-                       fileName: str,
-                       params: dict | None = None,
-                       jsonData: dict | None = None) -> bool:
+    async def download(
+        cls,
+        url: str,
+        savePath: str,
+        fileName: str,
+        params: dict | None = None,
+        jsonData: dict | None = None,
+    ) -> bool:
         """下载文件到指定路径并覆盖已存在的文件
 
         Args:
@@ -48,7 +50,9 @@ class CRequestManager:
                         f.write(response.content)
                     return True
                 else:
-                    logger.warning(f"文件下载失败: HTTP {response.status_code} {response.text}")
+                    logger.warning(
+                        f"文件下载失败: HTTP {response.status_code} {response.text}"
+                    )
                     return False
 
         except Exception as e:
@@ -81,7 +85,9 @@ class CRequestManager:
                 if response.status_code == 200:
                     return response.json()
                 else:
-                    logger.warning(f"{name}请求失败: HTTP {response.status_code} {response.text}")
+                    logger.warning(
+                        f"{name}请求失败: HTTP {response.status_code} {response.text}"
+                    )
                     return {}
         except httpx.RequestError as e:
             logger.warning(f"{name}请求异常", e=e)
@@ -112,7 +118,9 @@ class CRequestManager:
                 if response.status_code == 200:
                     return response.json()
                 else:
-                    logger.warning(f"{name}请求失败: HTTP {response.status_code} {response.text}")
+                    logger.warning(
+                        f"{name}请求失败: HTTP {response.status_code} {response.text}"
+                    )
                     return {}
         except httpx.RequestError as e:
             logger.warning(f"{name}请求异常", e=e)
@@ -139,7 +147,7 @@ class CRequestManager:
                     logger.warning("真寻农场签到文件检查失败, 即将下载")
                     return await cls.downloadSignInFile()
             except json.JSONDecodeError as e:
-                logger.warning(f"真寻农场签到文件格式错误, 即将下载")
+                logger.warning(f"真寻农场签到文件格式错误, 即将下载{e}")
                 return await cls.downloadSignInFile()
         else:
             return await cls.downloadSignInFile()
@@ -153,7 +161,7 @@ class CRequestManager:
             path = str(g_sSignInPath.parent.resolve(strict=False))
             yearMonth = g_pToolManager.dateTime().now().strftime("%Y%m")
 
-            await cls.download(url, path, "signTemp.json", jsonData={'date':yearMonth})
+            await cls.download(url, path, "signTemp.json", jsonData={"date": yearMonth})
             g_pToolManager.renameFile(f"{path}/signTemp.json", "sign_in.json")
 
             return True

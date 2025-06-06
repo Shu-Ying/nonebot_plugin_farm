@@ -1,6 +1,5 @@
 import json
 
-from pathlib import Path
 from nonebot import logger
 
 from . import config
@@ -97,5 +96,6 @@ class CJsonManager:
         except json.JSONDecodeError as e:
             logger.warning(f"sign_in.json JSON格式错误: {e}")
             return False
+
 
 g_pJsonManager = CJsonManager()
