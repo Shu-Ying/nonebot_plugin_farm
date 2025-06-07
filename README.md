@@ -8,6 +8,9 @@
     <a href="https://www.python.org">
         <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python">
     </a>
+    <a href="https://github.com/astral-sh/ruff">
+        <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="ruff">
+    </a>
     <a href="https://nonebot.dev/">
         <img src="https://img.shields.io/badge/Nonebot-2.0.0%2B-black" alt="Nonebot">
     </a>
@@ -32,6 +35,7 @@
   - [农场界面](#农场界面)
   - [如何安装](#如何安装)
   - [使用指令](#使用指令)
+  - [配置](#配置)
   - [更新日志(详细)：](#更新日志详细)
   - [用户方面](#用户方面)
   - [代码方面](#代码方面)
@@ -75,8 +79,6 @@
 </details>
 
 ---
-
-## 使用指令
 
 ## 使用指令
 

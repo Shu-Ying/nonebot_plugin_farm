@@ -10,7 +10,7 @@ from .config import g_sTranslation
 
 class CToolManager:
     @classmethod
-    async def isRegisteredByUid(uid: str) -> bool:
+    async def isRegisteredByUid(cls, uid: str) -> bool:
         result = await g_pDBService.user.isUserExist(uid)
 
         if not result:
