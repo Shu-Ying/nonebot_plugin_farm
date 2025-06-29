@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot_plugin_farm"
-version = "1.4.3"
+version = "1.5.0"
 description = "快乐的农场时光"
 authors = ["Art_Sakura <1754798088@qq.com>"]
 license = "GPL-3.0-or-later"
@@ -14,6 +14,7 @@ aiosqlite = "^0.21.0"
 httpx = ">=0.27.2,<1.0.0"
 pydantic = "<=2.10.6"
 zhenxun-utils = "^0.2.1"
+rich >= 13.9.4
 nonebot-plugin-alconna = ">=0.46.3,<1.0.0"
 nonebot-plugin-uninfo = "^0.6.0"
 nonebot-plugin-waiter = "^0.8.1"

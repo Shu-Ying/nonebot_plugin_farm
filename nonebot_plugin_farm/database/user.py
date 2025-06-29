@@ -1,10 +1,9 @@
 import math
-from typing import List, Union
 
 from nonebot import logger
 
-from .database import CSqlManager
 from ..tool import g_pToolManager
+from .database import CSqlManager
 
 
 class CUserDB(CSqlManager):
@@ -26,7 +25,7 @@ class CUserDB(CSqlManager):
     @classmethod
     async def initUserInfoByUid(
         cls, uid: str, name: str = "", exp: int = 0, point: int = 500
-    ) -> Union[bool, str]:
+    ) -> bool | str:
         """初始化用户信息，包含初始偷菜时间字符串与次数
 
         Args:
@@ -36,7 +35,7 @@ class CUserDB(CSqlManager):
             point (int): 农场币
 
         Returns:
-            Union[bool, str]: False 表示失败，字符串表示成功信息
+            bool | str: False 表示失败，字符串表示成功信息
         """
         nowStr = g_pToolManager.dateTime().date().today().strftime("%Y-%m-%d")
         sql = (
@@ -52,11 +51,11 @@ class CUserDB(CSqlManager):
             return False
 
     @classmethod
-    async def getAllUsers(cls) -> List[str]:
+    async def getAllUsers(cls) -> list[str]:
         """获取所有用户UID列表
 
         Returns:
-            List[str]: 用户UID列表
+            list[str]: 用户UID列表
         """
         cursor = await cls.m_pDB.execute("SELECT uid FROM user")
         rows = await cursor.fetchall()
@@ -226,11 +225,11 @@ class CUserDB(CSqlManager):
 
     @classmethod
     async def updateUserVipPointByUid(cls, uid: str, vipPoint: int) -> bool:
-        """根据用户Uid更新农场币数量
+        """根据用户Uid更新点券数量
 
         Args:
             uid (str): 用户Uid
-            vipPoint (int): 新农场币数量
+            vipPoint (int): 新点券数量
 
         Returns:
             bool: 是否更新成功
@@ -301,7 +300,8 @@ class CUserDB(CSqlManager):
             uid (str): 用户Uid
 
         Returns:
-            tuple[int, int, int]: (当前等级, 升至下级还需经验, 当前等级已获经验)，失败返回(-1, -1, -1)
+            tuple[int, int, int]: 成功返回(当前等级, 升至下级还需经验, 当前等级已获经验)
+            失败返回(-1, -1, -1)
         """
         if not uid:
             return -1, -1, -1

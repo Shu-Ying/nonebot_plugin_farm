@@ -32,6 +32,7 @@ diuse_register = on_alconna(
     priority=5,
     rule=to_me(),
     block=True,
+    use_cmd_start=True,
 )
 
 
@@ -56,7 +57,7 @@ async def handle_register(session: Uninfo):
         )
 
         msg = (
-            g_sTranslation["register"]["success"]
+            g_sTranslation["register"]["success"].format(point=500)
             if success
             else g_sTranslation["register"]["error"]
         )
@@ -327,6 +328,7 @@ reclamation = on_alconna(
     Alconna("开垦"),
     priority=5,
     block=True,
+    use_cmd_start=True,
 )
 
 
@@ -519,6 +521,42 @@ async def _(session: Uninfo):
     await MessageUtils.build_message(message).send()
 
     # await MessageUtils.alc_forward_msg([info], session.self_id, BotConfig.self_nickname).send(reply_to=True)
+
+
+soil_upgrade = on_alconna(
+    Alconna("土地升级", Args["index", int]),
+    priority=5,
+    block=True,
+    use_cmd_start=True,
+)
+
+
+@soil_upgrade.handle()
+async def _(session: Uninfo, index: Query[int] = AlconnaQuery("index", 1)):
+    uid = str(session.user.id)
+
+    if not await g_pToolManager.isRegisteredByUid(uid):
+        return
+
+    condition = await g_pFarmManager.soilUpgradeCondition(uid, index.result)
+
+    await MessageUtils.build_message(condition).send(reply_to=True)
+
+    @waiter(waits=["message"], keep_session=True)
+    async def check(event: Event):
+        return event.get_plaintext()
+
+    resp = await check.wait(timeout=60)
+    if resp is None:
+        await MessageUtils.build_message(g_sTranslation["soilInfo"]["timeOut"]).send(
+            reply_to=True
+        )
+        return
+    if not resp == "是":
+        return
+
+    res = await g_pFarmManager.soilUpgrade(uid, index.result)
+    await MessageUtils.build_message(res).send(reply_to=True)
 
 
 diuse_farm.shortcut(
