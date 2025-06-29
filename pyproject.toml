@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot_plugin_farm"
-version = "1.5.4"
+version = "1.5.5"
 description = "快乐的农场时光"
 authors = ["Art_Sakura <1754798088@qq.com>"]
 license = "GPL-3.0-or-later"
