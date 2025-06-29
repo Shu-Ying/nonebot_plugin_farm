@@ -663,8 +663,6 @@ class CFarmManager:
                 experience += 999
 
             # 更新数据库操作
-            await g_pDBService.userSoil.deleteUserSoil(uid, i)
-
             await g_pDBService.userSoil.updateUserSoilFields(
                 uid,
                 i,
@@ -672,6 +670,7 @@ class CFarmManager:
                     "plantName": "",
                     "plantTime": 0,
                     "matureTime": 0,
+                    "wiltStatus": 0,
                 },
             )
 
