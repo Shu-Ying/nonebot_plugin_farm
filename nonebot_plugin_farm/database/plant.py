@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import aiosqlite
 from nonebot import logger
 
-from ..config import g_bIsDebug, g_sPlantPath
+from ..config import g_bIsDebug, g_pConfigManager, g_sPlantPath, g_sResourcePath
 from ..request import g_pRequestManager
 
 
@@ -256,7 +256,7 @@ class CPlantManager:
             bool: 全部下载完成返回True，如有失败返回False
         """
         success = True
-        baseUrl = Config.get_config("zhenxun_plugin_farm", "服务地址")
+        baseUrl = g_pConfigManager.farm_server_url
 
         baseUrl = baseUrl.rstrip("/") + ":8998/file"
         try:
