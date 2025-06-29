@@ -671,6 +671,7 @@ class CFarmManager:
                     "plantTime": 0,
                     "matureTime": 0,
                     "wiltStatus": 0,
+                    "isSoilPlanted": 0,
                 },
             )
 
