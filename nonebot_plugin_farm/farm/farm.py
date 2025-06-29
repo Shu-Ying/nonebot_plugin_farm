@@ -526,7 +526,7 @@ class CFarmManager:
                     continue
 
                 # 如果没有种植
-                if soilInfo.get("isSoilPlanted", 0):
+                if soilInfo.get("isSoilPlanted", 1) == 0:
                     continue
 
                 level = soilInfo.get("soilLevel", 0)
@@ -650,7 +650,7 @@ class CFarmManager:
                 continue
 
             # 如果没有种植
-            if soilInfo.get("isSoilPlanted", 0):
+            if soilInfo.get("isSoilPlanted", 1) == 0:
                 continue
 
             # 如果不是枯萎状态
@@ -783,7 +783,7 @@ class CFarmManager:
                 continue
 
             # 如果没有种植
-            if soilInfo.get("isSoilPlanted", 0):
+            if soilInfo.get("isSoilPlanted", 1) == 0:
                 continue
 
             # 如果是枯萎状态
