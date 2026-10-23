@@ -1,163 +1,76 @@
-<div align="center">
+# NoneBot 农场
 
-# 真寻农场(nonebot_plugin_farm)
-<p align="center">
-    <a href="./LICENSE">
-        <img src="https://img.shields.io/badge/license-GPL3.0-FE7D37" alt="license">
-    </a>
-    <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python">
-    </a>
-    <a href="https://github.com/astral-sh/ruff">
-        <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="ruff">
-    </a>
-    <a href="https://nonebot.dev/">
-        <img src="https://img.shields.io/badge/Nonebot-2.0.0%2B-black" alt="Nonebot">
-    </a>
-</p>
+<p align="center"><img src="./logo.png" width="400" alt="真寻农场 Logo"></p>
 
-<p align="center">
+从 `main_plugin_farm` 自动生成的普通 NoneBot 插件，与真寻版使用相同的
+业务核心、命令和渲染资源，不依赖真寻或 zhenxun-utils。
 
-[![tencent-qq](https://img.shields.io/badge/%E7%BE%A4-%E7%9C%9F%E5%AF%BB%E5%86%9C%E5%9C%BA%E6%B5%8B%E8%AF%95-%23FF99CC
-)](https://qm.qq.com/q/7hsOD4rOw2)
+![农场预览](images/farm-preview.png)
 
-</p>
+## 安装与配置
 
-你是说可以种地对吧🤔?<br>
-该项目由真寻小插件[真寻农场](https://github.com/Shu-Ying/zhenxun_plugin_farm)移植
+需要 Python 3.10 及以上。生成仓库中执行 `pip install .`，或安装经过
+标签发布的 `nonebot_plugin_farm` 包，然后在 NoneBot 启动脚本中加入：
 
-</div>
+```python
+nonebot.load_plugin("nonebot_plugin_farm")
+```
 
----
-## 目录
-- [真寻农场(nonebot\_plugin\_farm)](#真寻农场nonebot_plugin_farm)
-  - [目录](#目录)
-  - [农场界面](#农场界面)
-  - [如何安装](#如何安装)
-  - [使用指令](#使用指令)
-  - [配置](#配置)
-  - [更新日志(详细)：](#更新日志详细)
-  - [用户方面](#用户方面)
-  - [代码方面](#代码方面)
-  - [待办事宜 `Todo` 列表](#待办事宜-todo-列表)
-  - [关于](#关于)
-  - [致谢](#致谢)
-  - [许可证](#许可证)
+可在 `.env` 中设置：
 
----
+```dotenv
+FARM_FONT=C:/Windows/Fonts/msyh.ttc
+FARM_IMAGE_FORMAT=AUTO
+FARM_IMAGE_QUALITY=75
+FARM_DEPLOYMENT=nonebot
+FARM_RESOURCE_SOURCE=Github
+FARM_SERVICE_URL=
+```
 
-## 农场界面
+`FARM_DATA_DIR` 可显式指定数据目录，默认沿用旧版插件 localstore 下的
+`nonebot_plugin_farm/farm_db` 子目录。旧 `farm.db` 保留，首次使用按当前
+机器人和平台迁入 `farm.sqlite3`；遇到账号或平台冲突会拒绝覆盖。
+日志写入该目录的 `farm-preview.log`。字体不可用时提供文字响应。
 
-![农场界面](./nonebot_plugin_farm/resource/1.png)
+`FARM_RESOURCE_SOURCE`（资源获取地址）支持`Github`、`Gitea`、`farm_service`，
+默认`Github`。`FARM_SERVICE_URL`（farm_service 地址）始终独立存在，
+供资源及后续活动功能共用；选择farm_service下载时须填写HTTPS基础地址。
+两项修改后重载。插件不包含素材ZIP：每次启动校验本地SHA256，缺失或不匹配
+才从`farm_service`仓库根目录`assets/assets.zip`下载，校验成功后原子替换。
+失败时保留文字功能，不自动跨源切换，重载后重试。活动功能尚未实施。
 
----
+`FARM_IMAGE_QUALITY` 为整数1～95，默认75，统一控制全部农场图片
+的编码质量；越高通常越清晰、文件越大，PNG无损格式不受此值影响。
+启动时校验配置。只有“我的农场 高清”允许高清，使用1536宽，质量
+取配置值与85的较大值；其他命令不接受高清。种子/作物仓库保留
+分页和“文字”选项，例如“我的种子 2 文字”。
+部署标识一旦使用，不应随意变更，否则会切换到不同的存档身份。
 
-## 如何安装
+## 当前命令
 
-<details open>
-<summary>使用 nb-cli 安装</summary>
-在 nonebot2 项目的根目录下打开命令行, 输入以下指令即可安装
+开通农场、我的农场、农场详述、地块编号、我的农场币、我的点券、
+我的种子、我的作物、种子商店、购买种子、播种、收获、铲除、
+作物加锁、作物解锁、出售作物、农场除虫、除虫、偷菜、农场帮助。
+发送「农场帮助」查看参数。图片与提及由 Alconna 统一消息适配。
+开垦每次增加1块普通空地；开垦 条件查询下一块地的等级与费用。
+初始3块的旧账号按可靠注册或旧库迁移记录一次性补3块，保留已开垦成果；
+来源不明、编号异常或补后超出30位置则保留原状并明确提示。
+范围与当前真寻生成版一致；旧版签到、改名、土地升级等命令
+尚未在共享核心中实现，此版本不提供这些命令。
 
-    nb plugin install nonebot-plugin-farm
+## 生成与发布
 
-</details>
+主仓库 `version.txt` 是版本的唯一来源，生成 ZIP、包版本和清单。
+`nonebot-preview.yml` 在 PR 中测试和构建，在主仓库 `main` 推送后
+使用 `FARM_RELEASE_TOKEN` 同步到 `Shu-Ying/nonebot_plugin_farm/main`。
+同步任务沿用真寻的 `zhenxun-preview` environment，兼容其中已有密钥。
 
-<details>
-<summary>使用包管理器安装</summary>
-在 nonebot2 项目的插件目录下, 打开命令行, 根据你使用的包管理器, 输入相应的安装命令
+目标仓库保留 `v*` 标签发布 PyPI 的方式和 `PYPI_TOKEN` 密钥。
+普通同步只校验、构建，不发布 PyPI。手动推送标签前应确认版本未在
+PyPI 使用，且标签去掉 `v` 后与 `version.txt` 完全一致。
+接入时远端旧版为 1.5.7，主仓库为 1.5.4；用户计划后续统一改为
+2.0.0，本次未提前修改。统一后发布标签应为 `v2.0.0`。
 
-<details>
-<summary>pip</summary>
-
-    pip install nonebot-plugin-farm
-
-</details>
-打开 nonebot2 项目根目录下的 `pyproject.toml` 文件, 在 `[tool.nonebot]` 部分追加写入
-
-    plugins = ["nonebot_plugin_farm"]
-
-</details>
-
----
-
-## 使用指令
-
-| 指令 | 描述 | Tip |
-| --- | --- | --- |
-| @小真寻 开通农场 | 首次开通农场 |  |
-| 我的农场 | 你的农场 |  |
-| 农场详述 | 农场详细信息 |  |
-| 我的农场币 | 查询农场币 |  |
-| 种子商店 [筛选关键字] [页数] or [页数] | 查看种子商店 | 当第一个参数为非整数时，会默认进入筛选状态。页数不填默认为1 |
-| 购买种子 [种子名称] [数量] | 购买种子 | 数量不填默认为1 |
-| 我的种子 | 查询仓库种子 |  |
-| 播种 [种子名称] [数量] | 播种种子 | 数量不填默认将最大可能播种 |
-| 收获 | 收获成熟作物 |  |
-| 铲除 | 铲除荒废作物 |  |
-| 我的作物 | 你的作物 |  |
-| 出售作物 [作物名称] [数量] | 从仓库里向系统售卖作物 | 不填写作物名将售卖仓库种全部作物 填作物名不填数量将指定作物全部出售 |
-| 偷菜 @美波理 | 偷别人的菜 | 每人每天只能偷5次 |
-| 更改农场名 [新的农场名] | 改名 | 农场名称无法存储特殊字符 |
-| 农场签到 | 签到 | 需要注意，该项会从服务器拉取签到数据 |
-| 土地升级 [地块ID] | 将土地升级，带来收益提升 | 如果土地升级时，土地有播种作物，那么将直接成熟 |
-
----
-
-## 配置
-在 nonebot2 项目的 .env 文件中添加下表中的配置
-
-| 配置项 | 是否必填 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| farm_draw_quality | 否 | "low" | 绘制农场清晰度 分为："low", "medium", "hight", "original" |
-| farm_server_url | 否 | "http://diuse.work" | 后续签到、交易行、活动等服务器地址 |
-
----
-
-## 更新日志[(详细)](./log/log.md)：
-用户方面
----
-- 新增土地升级指令，快来将土地升级至红土地、黑土地、金土地吧
-- 新增查漏补缺作物资源功能，自动更新最新作物和作物资源文件
-- 定时更新签到文件、作物资源从00:30调整至04:30
-- 修正了部分土地资源错误的情况
-- 修正了部分文本信息错误的情况
-
-代码方面
----
-- 修正部分事件连接机制
-- 修正网络请求端口
-
-## 待办事宜 `Todo` 列表
-
-- [x] 完善我的农场图片，例如左上角显示用户数据
-- [ ] 完善升级数据、作物数据、作物图片
-- [x] 签到功能
-- [x] 在线更新作物信息
-- [ ] 添加渔场功能
-- [ ] 增加活动、交易行功能
-- [ ] 增加交易行总行功能
-- [ ] 添加其他游戏种子素材
-- [ ] 想不到了，想到再说
-
----
-
-## 关于
-
-本人毫无任何Python经验，也从未正式的、系统的、完整的去学习Python。如有看到写的不对的地方，欢迎指出，也欢迎任何人一起来开发、完善农场。
-
-素材来均源于互联网，侵权请联系我删除
-
----
-
-## 致谢
-
-最后感谢以下框架/作者的提供的技术支持(排名不分先后):
-
-- [Nonebot2](https://github.com/nonebot/nonebot2) *✨ 跨平台 Python 异步机器人框架 ✨*
-- [zhenxun_bot](https://github.com/zhenxun-org/zhenxun_bot) *最爱真寻的一集*
-- [HibiKier](https://github.com/HibiKier) *阿咪为什么是神*
-- [ATTomato](https://github.com/ATTomatoo) *流泪偷码头.jpg*
-
-## 许可证
-
-`真寻农场(nonebot_plugin_farm)`将采用的是`GPLv3`许可证进行开源
+生成仓库的 `verify_package.py --directory .` 校验文件完整性；
+`python -m build` 生成 wheel/sdist。远端 CI 和实际机器人消息行为
+需要在部署环境进一步验证。
