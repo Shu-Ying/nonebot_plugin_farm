@@ -1,22 +1,19 @@
 """普通 NoneBot 配置；不依赖真寻配置系统。"""
 
+from typing import Literal
 from pathlib import Path
-from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, conint
+from pydantic import BaseModel, Field, conint, validator
 
 
 class Config(BaseModel):
     """农场启动配置。"""
 
-    farm_data_dir: Optional[Path] = Field(
-        None, description="数据目录；默认兼容旧版 localstore 农场目录",
-    )
-    farm_font: Optional[Path] = Field(
-        None, description="中文字体路径；不可用时退回文字响应",
-    )
     farm_deployment: str = Field(
         "nonebot", min_length=1, description="农场存档部署标识",
+    )
+    farm_data_dir: Path | None = Field(
+        None, description='兼容旧部署的数据目录；未设置时使用平台默认目录',
     )
     farm_image_format: Literal["AUTO", "JPEG", "PNG"] = Field(
         "AUTO", description="图片格式，AUTO 优先使用压缩 JPEG",
@@ -31,3 +28,7 @@ class Config(BaseModel):
     farm_service_url: str = Field(
         '', description='farm_service 地址，独立供资源及活动服务使用',
     )
+
+    @validator('farm_data_dir', pre=True)
+    def empty_data_directory(cls, value):
+        return None if value == '' else value

@@ -1,76 +1,106 @@
-# NoneBot 农场
+<div align="center">
 
-<p align="center"><img src="./logo.png" width="400" alt="真寻农场 Logo"></p>
+# 真寻农场(zhenxun_plugin_farm)
 
-从 `main_plugin_farm` 自动生成的普通 NoneBot 插件，与真寻版使用相同的
-业务核心、命令和渲染资源，不依赖真寻或 zhenxun-utils。
+<img src="./logo.png" width="400" alt="真寻农场 Logo">
 
-![农场预览](images/farm-preview.png)
+<p align="center">
+    <a href="./LICENSE">
+        <img src="https://img.shields.io/badge/license-GPL3.0-FE7D37" alt="license">
+    </a>
+    <a href="https://www.python.org">
+        <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python">
+    </a>
+    <a href="https://github.com/astral-sh/ruff">
+        <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="ruff">
+    </a>
+</p>
 
-## 安装与配置
+<p align="center">
 
-需要 Python 3.10 及以上。生成仓库中执行 `pip install .`，或安装经过
-标签发布的 `nonebot_plugin_farm` 包，然后在 NoneBot 启动脚本中加入：
+[![tencent-qq](https://img.shields.io/badge/%E7%BE%A4-%E7%9C%9F%E5%AF%BB%E5%86%9C%E5%9C%BA%E6%B5%8B%E8%AF%95-%23FF99CC
+)](https://qm.qq.com/q/7hsOD4rOw2)
 
-```python
-nonebot.load_plugin("nonebot_plugin_farm")
-```
+</p>
 
-可在 `.env` 中设置：
+你是说可以种地对吧🤔?
 
-```dotenv
-FARM_FONT=C:/Windows/Fonts/msyh.ttc
-FARM_IMAGE_FORMAT=AUTO
-FARM_IMAGE_QUALITY=75
-FARM_DEPLOYMENT=nonebot
-FARM_RESOURCE_SOURCE=Github
-FARM_SERVICE_URL=
-```
+</div>
 
-`FARM_DATA_DIR` 可显式指定数据目录，默认沿用旧版插件 localstore 下的
-`nonebot_plugin_farm/farm_db` 子目录。旧 `farm.db` 保留，首次使用按当前
-机器人和平台迁入 `farm.sqlite3`；遇到账号或平台冲突会拒绝覆盖。
-日志写入该目录的 `farm-preview.log`。字体不可用时提供文字响应。
+---
+## 目录
+- [真寻农场(zhenxun\_plugin\_farm)](#真寻农场zhenxun_plugin_farm)
+  - [目录](#目录)
+  - [农场界面](#农场界面)
+  - [如何安装](#如何安装)
+  - [农场帮助](#农场帮助)
+  - [待办事宜 `Todo` 列表](#待办事宜-todo-列表)
+  - [关于](#关于)
+  - [致谢](#致谢)
+  - [许可证](#许可证)
+  - [上游仓库](#上游仓库)
 
-`FARM_RESOURCE_SOURCE`（资源获取地址）支持`Github`、`Gitea`、`farm_service`，
-默认`Github`。`FARM_SERVICE_URL`（farm_service 地址）始终独立存在，
-供资源及后续活动功能共用；选择farm_service下载时须填写HTTPS基础地址。
-两项修改后重载。插件不包含素材ZIP：每次启动校验本地SHA256，缺失或不匹配
-才从`farm_service`仓库根目录`assets/assets.zip`下载，校验成功后原子替换。
-失败时保留文字功能，不自动跨源切换，重载后重试。活动功能尚未实施。
+---
 
-`FARM_IMAGE_QUALITY` 为整数1～95，默认75，统一控制全部农场图片
-的编码质量；越高通常越清晰、文件越大，PNG无损格式不受此值影响。
-启动时校验配置。只有“我的农场 高清”允许高清，使用1536宽，质量
-取配置值与85的较大值；其他命令不接受高清。种子/作物仓库保留
-分页和“文字”选项，例如“我的种子 2 文字”。
-部署标识一旦使用，不应随意变更，否则会切换到不同的存档身份。
+## 农场界面
 
-## 当前命令
+![农场界面](./images/farm-preview.png)
 
-开通农场、我的农场、农场详述、地块编号、我的农场币、我的点券、
-我的种子、我的作物、种子商店、购买种子、播种、收获、铲除、
-作物加锁、作物解锁、出售作物、农场除虫、除虫、偷菜、农场帮助。
-发送「农场帮助」查看参数。图片与提及由 Alconna 统一消息适配。
-开垦每次增加1块普通空地；开垦 条件查询下一块地的等级与费用。
-初始3块的旧账号按可靠注册或旧库迁移记录一次性补3块，保留已开垦成果；
-来源不明、编号异常或补后超出30位置则保留原状并明确提示。
-范围与当前真寻生成版一致；旧版签到、改名、土地升级等命令
-尚未在共享核心中实现，此版本不提供这些命令。
+---
 
-## 生成与发布
+## 如何安装
 
-主仓库 `version.txt` 是版本的唯一来源，生成 ZIP、包版本和清单。
-`nonebot-preview.yml` 在 PR 中测试和构建，在主仓库 `main` 推送后
-使用 `FARM_RELEASE_TOKEN` 同步到 `Shu-Ying/nonebot_plugin_farm/main`。
-同步任务沿用真寻的 `zhenxun-preview` environment，兼容其中已有密钥。
+方法一（推荐）：在小真寻后台的插件商店下载即可<br>
+方法二：下载源码放在小真寻`plugin`目录下
 
-目标仓库保留 `v*` 标签发布 PyPI 的方式和 `PYPI_TOKEN` 密钥。
-普通同步只校验、构建，不发布 PyPI。手动推送标签前应确认版本未在
-PyPI 使用，且标签去掉 `v` 后与 `version.txt` 完全一致。
-接入时远端旧版为 1.5.7，主仓库为 1.5.4；用户计划后续统一改为
-2.0.0，本次未提前修改。统一后发布标签应为 `v2.0.0`。
+---
 
-生成仓库的 `verify_package.py --directory .` 校验文件完整性；
-`python -m build` 生成 wheel/sdist。远端 CI 和实际机器人消息行为
-需要在部署环境进一步验证。
+## 农场帮助
+![农场帮助](./images/help-nonebot.png)
+
+---
+
+## 待办事宜 `Todo` 列表
+
+- [x] 完善我的农场图片，例如左上角显示用户数据
+- [ ] 完善升级数据、作物数据、作物图片
+- [x] 签到功能
+- [x] 在线更新作物信息
+- [ ] 添加渔场功能
+- [ ] 增加活动、交易行功能
+- [ ] 增加交易行总行功能
+- [ ] 添加其他游戏种子素材
+- [ ] 想不到了，想到再说
+
+---
+
+## 关于
+
+本人毫无任何Python经验，也从未正式的、系统的、完整的去学习Python。如有看到写的不对的地方，欢迎指出，也欢迎任何人一起来开发、完善农场。
+
+素材来均源于互联网，侵权请联系我删除
+
+---
+
+## 致谢
+
+最后感谢以下框架/作者的提供的技术支持(排名不分先后):
+
+- [QQ农场](https://qqnc.qq.com/) *绝大多数的素材来源*
+- [小赖字体](https://github.com/lxgw/kose-font) *lxgw 提供的开源中文手写字体，采用 SIL OFL 1.1，随包附带完整字体许可*
+- [Nonebot2](https://github.com/nonebot/nonebot2) *✨ 跨平台 Python 异步机器人框架 ✨*
+- [zhenxun_bot](https://github.com/zhenxun-org/zhenxun_bot) *最爱真寻的一集*
+- [HibiKier](https://github.com/HibiKier) *阿咪为什么是神*
+- [ATTomato](https://github.com/ATTomatoo) *流泪偷码头.jpg*
+- [ChatGPT](https://chatgpt.com/) *AI神力*
+
+## 许可证
+
+`真寻农场(zhenxun_plugin_farm)`将采用的是`GPLv3`许可证进行开源
+
+默认使用的小赖字体由 farm_service 分发，单独遵循 `SIL OFL 1.1`，完整版权声明与许可见
+[OFL-Xiaolai.txt](./nonebot_plugin_farm/_vendor/farm_render/data/OFL-Xiaolai.txt)。
+
+## 上游仓库
+
+- [main_plugin_farm](https://github.com/Shu-Ying/main_plugin_farm)

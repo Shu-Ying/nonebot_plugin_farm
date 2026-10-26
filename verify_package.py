@@ -42,6 +42,8 @@ def verify_files(files):
         "nonebot_plugin_farm/commands.py", "nonebot_plugin_farm/runtime.py",
         "nonebot_plugin_farm/_vendor/farm_core/__init__.py",
         "nonebot_plugin_farm/_vendor/farm_render/data/asset-manifest.json",
+        "nonebot_plugin_farm/_vendor/farm_render/data/font-manifest.json",
+        "nonebot_plugin_farm/_vendor/farm_render/data/OFL-Xiaolai.txt",
         ".github/workflows/publish.yaml", ".github/workflows/verify.yml",
     }
     if not required <= set(files):

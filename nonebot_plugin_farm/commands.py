@@ -21,8 +21,8 @@ config = get_plugin_config(Config)
 driver = get_driver()
 runtime = Runtime(
     data_directory(store.get_plugin_data_dir(), config.farm_data_dir),
-    config.farm_font, config.farm_deployment, config.farm_image_format,
-    font_setting="FARM_FONT",
+    deployment=config.farm_deployment,
+    image_format=config.farm_image_format,
     image_quality=config.farm_image_quality,
     framework='nonebot',
     resource_source=config.farm_resource_source,
