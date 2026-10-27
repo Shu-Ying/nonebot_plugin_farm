@@ -18,9 +18,9 @@ jobs:
           python-version: '3.10'
       - run: python verify_package.py --directory .
       - run: python -m pip install build
-      - run: python -m build --sdist --wheel --outdir ../packages
+      - run: python -m build --sdist --wheel --outdir dist
       - uses: actions/upload-artifact@v7
         with:
           name: nonebot-distributions
-          path: ../packages/*
+          path: dist/*
           if-no-files-found: error

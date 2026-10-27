@@ -1,7 +1,7 @@
 {
   "files": {
-    ".github/workflows/publish.yaml": "c19c6f8f5ea1810956dcb6e961d30942262804d6cdb0fe50cd085d383e0d3fbb",
-    ".github/workflows/verify.yml": "ebd85155c40a7980204991638a75a1a08525786bcdfe7325da9b65a5137aa7e6",
+    ".github/workflows/publish.yaml": "935e5fd4456d1e34776e478fa946a066187f181a798dbb2e85830d5d51720b76",
+    ".github/workflows/verify.yml": "ed63f10e897cc9bc3d645a61289bfcab46c7b2e8d154902936579bd7d0ac2400",
     "LICENSE": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
     "MANIFEST.in": "edb1f9f1eeae9d1a7c9d2c0ab06013499c2c12f4df9331844f2ea72aa1886f7b",
     "README.md": "292e1d54d6f21fc46cb04bd26b5e95618fd20ad8141cb0798afda09c48d595e7",
@@ -54,7 +54,7 @@
     "nonebot_plugin_farm/_vendor/farm_render/service.py": "fa35eb6b928b28e0e9ff1edfcb4e747de4efc9743db748911903121b3043c647",
     "nonebot_plugin_farm/_vendor/farm_render/shop.py": "c1a478b7fceb84728b842f0ce80bb6cfc608dbf465ca82064c0f4eebdeb0fce3",
     "nonebot_plugin_farm/_vendor/farm_render/warehouse.py": "a688ad36b9a91a71211e0dedf814f50bac3ec5c2c36f02a091f36008b87ffb61",
-    "nonebot_plugin_farm/_version.py": "64e838d5a0a0284b8e6cae5685e8229177a4b4558f25a799f9330387429ef793",
+    "nonebot_plugin_farm/_version.py": "c446fb6786fcc5a9575c4c41838d973c085b24a9e21f372c10f8e9fba4b7a698",
     "nonebot_plugin_farm/commands.py": "20e6eaf3e8bc5a3a7eeb8187d8b7edb3b08d8fcdc131591f0bd8a3bd1a5040f3",
     "nonebot_plugin_farm/config.py": "f4144d7178f18fbd6a32e5c913eca81bb2857727d615a80c776c3ea80361835c",
     "nonebot_plugin_farm/data_paths.py": "ee32e9b96627f8b8e2f0bf5441997004e8fcf11a9726aa3d2ee2b78ec803561b",
@@ -62,16 +62,16 @@
     "nonebot_plugin_farm/runtime_logging.py": "36c177b8f8fd385d2a0f410322cd26614686e441cc0a5b5377c9e658f26d5f4d",
     "pyproject.toml": "9699db057a584551df5f9720896268c3b00b6b796ff770dd3eb74228058adf66",
     "verify_package.py": "27f138bc42920ce10144a023bd57e75bb06eb5efc171ae567c155412a345942e",
-    "version.txt": "a8d4609d3074178dfd6e468d23fe83f2ea46e02faecff056938b59256e7f5bb6"
+    "version.txt": "ce0a2005da2b159fde33efc005d063470ccc2ccc54ffb702dfafb2c330285040"
   },
   "plugin": "nonebot_plugin_farm",
   "schema": 1,
   "source": {
-    "commit": "d05b2e57654542615f36ca456a91fede74ca765a",
+    "commit": "c6b504924e57bc287f746dc0c37db5af0f11c9bd",
     "dirty": false,
-    "message": "fixed # 修复astrbot日志未使用logging.basicConfig",
+    "message": "fixed # 修复部分工作流BUG",
     "repository": "https://github.com/Shu-Ying/main_plugin_farm.git"
   },
   "target": "nonebot",
-  "version": "2.0.4"
+  "version": "2.0.5"
 }
