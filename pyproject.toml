@@ -16,6 +16,7 @@ dependencies = [
     "nonebot-plugin-uninfo>=0.6,<1",
     "nonebot-plugin-localstore>=0.7,<1",
     "Pillow>=10.4,<13",
+    "rich>=13.9,<16",
 ]
 
 [project.urls]
